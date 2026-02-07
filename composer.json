@@ -1,0 +1,18 @@
+{
+  "name": "ict-nick/drupal-lint",
+  "description": "Shared Drupal linting standards aligned with Drupal.org CI",
+  "type": "library",
+  "license": "GPL-2.0-or-later",
+  "require": {
+    "php": ">=8.1"
+  },
+  "require-dev": {
+    "drupal/coder": "^8.3",
+    "squizlabs/php_codesniffer": "^3.9",
+    "phpstan/phpstan": "^1.10",
+    "mglaman/phpstan-drupal": "^2.0"
+  },
+  "bin": [
+    "scripts/lint.sh"
+  ]
+}
