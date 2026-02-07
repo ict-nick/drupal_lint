@@ -15,8 +15,8 @@ composer require --dev ict-nick/drupal-lint:dev-main
 
 Lint only git-changed custom code (default):
 
-`sh vendor/bin/files.sh | sh vendor/bin/lint.sh`
+`vendor/bin/ict-lint`
 
 Lint all custom code:
 
-`sh vendor/bin/files.sh --all | sh vendor/bin/lint.sh`
+`vendor/bin/ict-lint --all`

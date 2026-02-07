@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+
+set -e
+
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+
+FILES_SCRIPT="$SCRIPT_DIR/files.sh"
+LINT_SCRIPT="$SCRIPT_DIR/lint.sh"
+
+if [ "$1" = "--all" ]; then
+  sh "$FILES_SCRIPT" --all | sh "$LINT_SCRIPT"
+else
+  sh "$FILES_SCRIPT" | sh "$LINT_SCRIPT"
+fi
