@@ -1,4 +1,2 @@
 parameters:
   level: 5
-  drupal:
-    root: web

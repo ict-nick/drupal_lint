@@ -32,7 +32,8 @@ run_check() {
   LABEL="$1"
   CMD="$2"
 
-  echo "▶ $LABEL"
+  echo "---------> $LABEL"
+  echo "---------> $CMD"
   sh -c "$CMD"
   STATUS=$?
 
@@ -82,13 +83,16 @@ fi
 
 if [ -n "$JS_FILES" ]; then
   if check_cmd eslint; then
-    run_check "ESLint" "eslint $JS_FILES"
+    run_check "ESLint" \
+      "eslint --no-eslintrc --config vendor/ict-nick/drupal-lint/config/.eslintrc.json $JS_FILES"
   else
-    MISSING=1
     FAILED=1
     echo "✖ ESLint not found"
-    echo "  Install with:"
-    echo "    npm install --save-dev eslint eslint-config-drupal"
+    echo
+    echo "  JavaScript files were detected, but ESLint is not available."
+    echo "  To enable JavaScript linting (Drupal standards), install:"
+    echo
+    echo "    npm install --save-dev eslint@^8 eslint-config-drupal"
     echo
   fi
 fi
