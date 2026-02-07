@@ -1,20 +1,33 @@
 #!/usr/bin/env sh
 
-# Do NOT exit on first error
 set +e
 
 FAILED=0
 MISSING=0
 
-echo "Running Drupal lint checks…"
+FILES="$(cat)"
+
+if [ -z "$FILES" ]; then
+  echo "No relevant files to lint. Skipping."
+  exit 0
+fi
+
+echo "Running Drupal lint checks on:"
+echo "$FILES"
 echo
 
-# Helper: check command existence
+# Split files by type
+PHP_FILES=$(echo "$FILES" | grep -E '\.(php|module|inc|install|theme)$' || true)
+JS_FILES=$(echo "$FILES" | grep -E '\.js$' || true)
+CSS_FILES=$(echo "$FILES" | grep -E '\.css$' || true)
+
+# PHPStan wants directories, not files
+PHPSTAN_DIRS=$(echo "$PHP_FILES" | xargs -n1 dirname | sort -u)
+
 check_cmd() {
   command -v "$1" >/dev/null 2>&1
 }
 
-# Helper: run a command and track failure
 run_check() {
   LABEL="$1"
   CMD="$2"
@@ -35,69 +48,64 @@ run_check() {
 
 # ---- PHPCS ----------------------------------------------------
 
-if check_cmd phpcs; then
-  run_check "PHPCS (Drupal standards)" \
-    "phpcs --standard=vendor/ict-nick/drupal-lint/config/phpcs.xml.dist"
-else
-  MISSING=1
-  FAILED=1
-  echo "✖ PHPCS not found"
-  echo "  Install with:"
-  echo "    composer require --dev drupal/coder squizlabs/php_codesniffer"
-  echo
+if [ -n "$PHP_FILES" ]; then
+  if check_cmd phpcs; then
+    run_check "PHPCS (Drupal standards)" \
+      "phpcs --standard=vendor/ict-nick/drupal-lint/config/phpcs.xml.dist $PHP_FILES"
+  else
+    MISSING=1
+    FAILED=1
+    echo "✖ PHPCS not found"
+    echo "  Install with:"
+    echo "    composer require --dev drupal/coder squizlabs/php_codesniffer"
+    echo
+  fi
 fi
 
 # ---- PHPSTAN --------------------------------------------------
 
-if check_cmd phpstan; then
-  run_check "PHPStan (Drupal)" \
-    "phpstan analyse --configuration=vendor/ict-nick/drupal-lint/config/phpstan.neon"
-else
-  MISSING=1
-  FAILED=1
-  echo "✖ PHPStan not found"
-  echo "  Install with:"
-  echo "    composer require --dev phpstan/phpstan mglaman/phpstan-drupal"
-  echo
+if [ -n "$PHPSTAN_DIRS" ]; then
+  if check_cmd phpstan; then
+    run_check "PHPStan (Drupal)" \
+      "phpstan analyse --configuration=vendor/ict-nick/drupal-lint/config/phpstan.neon $PHPSTAN_DIRS"
+  else
+    MISSING=1
+    FAILED=1
+    echo "✖ PHPStan not found"
+    echo "  Install with:"
+    echo "    composer require --dev phpstan/phpstan mglaman/phpstan-drupal"
+    echo
+  fi
 fi
 
 # ---- ESLINT ---------------------------------------------------
 
-if check_cmd eslint; then
-  run_check "ESLint" "eslint ."
-else
-  MISSING=1
-  FAILED=1
-  echo "✖ ESLint not found"
-  echo "  Install with:"
-  echo "    npm install --save-dev eslint eslint-config-drupal"
-  echo
+if [ -n "$JS_FILES" ]; then
+  if check_cmd eslint; then
+    run_check "ESLint" "eslint $JS_FILES"
+  else
+    MISSING=1
+    FAILED=1
+    echo "✖ ESLint not found"
+    echo "  Install with:"
+    echo "    npm install --save-dev eslint eslint-config-drupal"
+    echo
+  fi
 fi
 
 # ---- STYLELINT ------------------------------------------------
 
-if check_cmd stylelint; then
-  run_check "Stylelint" 'stylelint "**/*.css"'
-else
-  MISSING=1
-  FAILED=1
-  echo "✖ Stylelint not found"
-  echo "  Install with:"
-  echo "    npm install --save-dev stylelint stylelint-config-standard"
-  echo
-fi
-
-# ---- CSPELL ---------------------------------------------------
-
-if check_cmd cspell; then
-  run_check "CSpell" 'cspell "**/*.{php,js,css,md}"'
-else
-  MISSING=1
-  FAILED=1
-  echo "✖ CSpell not found"
-  echo "  Install with:"
-  echo "    npm install --save-dev cspell"
-  echo
+if [ -n "$CSS_FILES" ]; then
+  if check_cmd stylelint; then
+    run_check "Stylelint" "stylelint $CSS_FILES"
+  else
+    MISSING=1
+    FAILED=1
+    echo "✖ Stylelint not found"
+    echo "  Install with:"
+    echo "    npm install --save-dev stylelint stylelint-config-standard"
+    echo
+  fi
 fi
 
 # ---- SUMMARY --------------------------------------------------

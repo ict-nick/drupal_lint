@@ -2,11 +2,21 @@
 
 A shared, Composer-installable Drupal linting toolkit aligned with Drupal.org CI.
 
-## Usage
+## Add to a Drupal project
+
+This package is consumed directly from GitHub.
 
 ```bash
-composer require --dev ict-nick/drupal-lint
-composer lint
+composer config repositories.ict-nick-drupal-lint vcs https://github.com/ict-nick/drupal_lint.git
+composer require --dev ict-nick/drupal-lint:dev-main
 ```
 
-Intended to be run inside Lando or CI.
+## Usage
+
+Lint only git-changed custom code (default):
+
+`sh vendor/bin/files.sh | sh vendor/bin/lint.sh`
+
+Lint all custom code:
+
+`sh vendor/bin/files.sh --all | sh vendor/bin/lint.sh`
